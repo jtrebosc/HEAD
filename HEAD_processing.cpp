@@ -9,6 +9,7 @@
 using namespace std;
 
 struct data{
+const double HLarmor = 1.;
     int TD1;
     int TD2;
     double lambda;
@@ -202,7 +203,7 @@ int main() {
 
     //Saving the original 2D spectrum as a *.spe file
     fp=fopen("original_spectrum.spe","w");
-    fprintf(fp,"SIMP\nNP=%d\nSW=%.2lf\nX0=%.2lf\nSF=%.2lf\nNI=%d\nSW1=%.2lf\nX0_F1=%.2lf\nSF1=%.2lf\nTYPE=SPE\nDATA\n",TD2,width*600.0,left*600.0,600.0,TD1,width*600.0*TD1/TD2,width*300.0*TD1/TD2,600.0);
+    fprintf(fp,"SIMP\nNP=%d\nSW=%.2lf\nX0=%.2lf\nSF=%.2lf\nNI=%d\nSW1=%.2lf\nX0_F1=%.2lf\nSF1=%.2lf\nTYPE=SPE\nDATA\n",TD2,width*HLarmor,left*HLarmor,HLarmor,TD1,width*HLarmor*TD1/TD2,width*300.0*TD1/TD2,HLarmor);
     for(i=0;i<TD1;i++){
         for(j=0;j<TD2;j++){
             int F1_index=-TD1/2+i+j;
@@ -212,16 +213,18 @@ int main() {
                 fprintf(fp,"0.0   0.0\n");
         }
     }
+    fprintf(fp,"END");
     fclose(fp);
 
     //Saving the sheared 2D spectrum as a *.spe file
     fp=fopen("sheared_spectrum.spe","w");
-    fprintf(fp,"SIMP\nNP=%d\nSW=%.2lf\nX0=%.2lf\nSF=%.2lf\nNI=%d\nSW1=%.2lf\nX0_F1=%.2lf\nSF1=%.2lf\nTYPE=SPE\nDATA\n",TD2,width*600.0,left*600.0,600.0,TD2,width*600.0,left*600.0,600.0);
+    fprintf(fp,"SIMP\nNP=%d\nSW=%.2lf\nX0=%.2lf\nSF=%.2lf\nNI=%d\nSW1=%.2lf\nX0_F1=%.2lf\nSF1=%.2lf\nTYPE=SPE\nDATA\n",TD2,width*HLarmor,left*HLarmor,HLarmor,TD2,width*HLarmor,left*HLarmor,HLarmor);
     for(i=0;i<TD2;i++){
         for(j=0;j<TD2;j++){
             fprintf(fp,"%lf   0.0\n",spec.spectrum[i][j]);
         }
     }
+    fprintf(fp,"END");
     fclose(fp);
 
     //normalizing the F2 spectrum, (sum of rows)
@@ -318,7 +321,7 @@ int main() {
 
     //Also saving the isotropic spectrum as a *.spe file
     fp=fopen("isotropic_spectrum.spe","w");
-    fprintf(fp,"SIMP\nNP=%d\nSW=%.2lf\nX0=%.2lf\nSF=%.2lf\nTYPE=SPE\nDATA\n",TD2,width*600.0,left*600.0,600.0);
+    fprintf(fp,"SIMP\nNP=%d\nSW=%.2lf\nX0=%.2lf\nSF=%.2lf\nTYPE=SPE\nDATA\n",TD2,width*HLarmor,left*HLarmor,HLarmor);
     for(i=0;i<TD2;i++){
         fprintf(fp,"%lf 0\n",iso_spec[i]);
     }
@@ -327,15 +330,17 @@ int main() {
 
     //*.spe file of the 2D version of the above spectrum
     fp=fopen("isotropic_spectrum_2D.spe","w");
-    fprintf(fp,"SIMP\nNP=%d\nSW=%.2lf\nX0=%.2lf\nSF=%.2lf\nNI=%d\nSW1=%.2lf\nX0_F1=%.2lf\nSF1=%.2lf\nTYPE=SPE\nDATA\n",TD2,width*600.0,left*600.0,600.0,TD2,width*600.0,left*600.0,600.0);
+    fprintf(fp,"SIMP\nNP=%d\nSW=%.2lf\nX0=%.2lf\nSF=%.2lf\nNI=%d\nSW1=%.2lf\nX0_F1=%.2lf\nSF1=%.2lf\nTYPE=SPE\nDATA\n",TD2,width*HLarmor,left*HLarmor,HLarmor,TD2,width*HLarmor,left*HLarmor,HLarmor);
     for(i=0;i<TD2;i++){
         for(j=0;j<TD2;j++){
             fprintf(fp,"%lf   0.0\n",spec.spectrum[i][j]*wt[j]);
         }
     }
+    fprintf(fp,"END");
     fclose(fp);
 
     auto_decon();
 
     return 0;
 }
+
