@@ -1,3 +1,8 @@
+// #include <iostream>
+#include <fstream>
+#include <sstream>
+#include <vector>
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,23 +13,113 @@
 #include "decon.hpp"
 using namespace std;
 
-struct data{
 const double HLarmor = 1.;
+
+struct DataStruct{
     int TD1;
     int TD2;
+    double sw;
+    double sw1;
+    double left;
+    double right;
     double lambda;
     vector<int> index;
     vector< vector<double> > spectrum;
     vector<double> F2_sum;
     vector<double> F1_sum;
-};
+} ;
+
+DataStruct read_totxt_file_meta(char *totxt_filename) {
+    FILE *fp;
+    char buffer[256], word[24], pound;
+    int i, j, TD1, TD2;
+    double left, right;
+    double left1, right1;
+
+    //reading the header file to get TD1, TD2, and the spectral width and offset in F2.
+    fp=fopen(totxt_filename,"r");
+    if(fp==NULL){
+        FILE *error_file;
+        error_file=fopen("error.txt","a");
+        fprintf(error_file, "\nERROR: totxt spectrum file '%s' not found\n", totxt_filename);
+        fclose(error_file);
+        exit(1);
+    }
+
+    int state=0;
+    while ((fgets(buffer, sizeof(buffer), fp) != NULL)||(state<3)) {
+        if(buffer[0]=='#'){
+                sscanf(buffer,"%c %s",&pound,word);
+                if(strcmp(word,"F2LEFT")==0){
+                    sscanf(buffer,"%c %s %s %lf %s %s %s %lf",&pound,word,word,&left,word,word,word,&right);
+                    sprintf(word,"void");
+                    state++;
+                }
+                else if(strcmp(word,"F1LEFT")==0){
+                    sscanf(buffer,"%c %s %s %lf %s %s %s %lf",&pound,word,word,&left1,word,word,word,&right1);
+                    sprintf(word,"void");
+                    state++;
+                }
+                else if(strcmp(word,"NROWS")==0){
+                    sscanf(buffer,"%c %s %s %d",&pound,word,word,&TD1);
+                    sprintf(word,"void");
+                    state++;
+                }
+                else if(strcmp(word,"NCOLS")==0){
+                    sscanf(buffer,"%c %s %s %d",&pound,word,word,&TD2);
+                    sprintf(word,"void");
+                    state++;
+                }
+            }
+    }
+    fclose(fp);
+
+    //creating the data structure
+    DataStruct spec;
+    spec.left = left;
+    spec.right = right;
+    left1 = left1;
+    right1 = right1;
+    spec.sw = abs(left-right)/(TD2-1)*TD2;
+    spec.sw1 = abs(left1-right1)/(TD1-1)*TD1;
+    spec.spectrum.resize(TD2);
+    spec.F2_sum.resize(TD2,0.);
+    spec.F1_sum.resize(TD2,0.);
+    spec.TD2=TD2;
+    spec.TD1=TD1;
+    spec.lambda=0.0;
+    for(i=0;i<TD2;i++){
+        spec.spectrum[i].resize(TD2,0.);
+    }
+
+    //reading the spectrum intensities and storing them as a sheared spectrum TD2xTD2
+    fp=fopen(totxt_filename,"r");
+    for(j=0;j<TD1;j++){
+        for(i=0; i<TD2; i++){
+            fgets(buffer, sizeof(buffer), fp);
+            if(buffer[0]=='#'){
+                i--;
+            }
+            else{
+                int F1_index=-TD1/2+i+j;
+                if((F1_index>0)&&(F1_index<TD2)){
+                    sscanf(buffer,"%lf",&spec.spectrum[F1_index][i]);
+                    if(spec.spectrum[F1_index][i]<0.)
+                        spec.spectrum[F1_index][i]=0.;
+                }
+            }
+        }
+    }
+    fclose(fp);
+    return spec;
+}
 
 double RMSD(const gsl_vector* weights, void* params){
     //Cost function used to calculate the offset between the experimental F2 spectrum
     //and the predicted isotropic spectrum in F1. Also includes Tikhonov weighting.
 
     //gathering the relevant parameters from the data structure
-    struct data *spec = (struct data*) params;
+    DataStruct *spec = (DataStruct*) params;
     int TD2=spec->TD2,i,j;
     int TD1=spec->TD1;
     vector<double> F1_sum(TD2,0.);
@@ -61,7 +156,7 @@ double RMSD(const gsl_vector* weights, void* params){
 void gradient(const gsl_vector *var, void *params, gsl_vector *df){
     //Gradient of the RMSD, used for GSL gradient optimizers
 
-    struct data *spec = (struct data*) params;
+    DataStruct *spec = (DataStruct*) params;
     int var_size=spec->index.size(),i;
     double cost_0 = RMSD(var, params), val[2];
 
@@ -79,7 +174,7 @@ void gradient_fdf (const gsl_vector *var, void *params,double *f,gsl_vector *df)
     //For the GSL gradient optimizers
 
     *f = RMSD(var, params);
-    struct data *spec = (struct data*) params;
+    DataStruct *spec = (DataStruct*) params;
     int var_size=spec->index.size(),i;
     double cost_0 = RMSD(var, params), val[2];
 
@@ -96,8 +191,9 @@ void calc_F1sum(const gsl_vector* weights, void* params, vector<double>& F1_sum,
     //Function used to integrate over the HEAD spectrum to produce the isotropic spectrum with appropriate intensities
 
     //Gathering parameters from the data structure
-    struct data *spec = (struct data*) params;
-    int TD2=spec->TD2,i,j,ii;
+    DataStruct *spec = (DataStruct*) params;
+    int TD2=spec->TD2;
+    int i, j, ii;
     int TD1=spec->TD1;
     vector<double> corr_weights(TD2,0.);
 
@@ -118,88 +214,53 @@ void calc_F1sum(const gsl_vector* weights, void* params, vector<double>& F1_sum,
     }
 }
 
-int main() {
+int main(int argc, char* argv[]) {
     //parameter declaration
     int TD2, TD1, i=0, j=0;
-    char totxt_filename[128], buffer[256], word[24], pound;
+    char totxt_filename[128], buffer[256], word[24], pound, *type;
     double left, right, width, delta,lambda;
     FILE *fp;
-
+    DataStruct spec;
     //Interface to gather the totxt filename and the lambda parameter for regularization
-    printf("What is the filename for the 2D CS-lineshape correlation spectrum converted using totxt?\n");
-    printf("Note that the digital resolution in F1 and F2 needs to be identical.\n");
-    scanf("%s",totxt_filename);
+    // Check if the filename and is provided as a command-line argument
+    if (argc < 3) {
+        printf("What is the type of input file ?\n\
+          Either 'totxt' for the 2D CS-lineshape correlation spectrum converted using totxt?\n\
+        scanf("%s",type);
+        printf("What is the filename for the 2D CS-lineshape correlation spectrum?\n");
+        printf("Note that the digital resolution in F1 and F2 needs to be identical.\n");
+        scanf("%s",totxt_filename);
+    } else {
+        type = argv[1];
+        strcpy(totxt_filename, argv[2]);
+    }
 
-    printf("Lambda value for regularization (0 for pure least squares)\n");
-    scanf("%lf",&lambda);
 
-    //reading the header file to get TD1, TD2, and the spectral width and offset in F2.
-    fp=fopen(totxt_filename,"r");
-    if(fp==NULL){
-        FILE *error_file;
-        error_file=fopen("error.txt","a");
-        fprintf(error_file, "\nERROR: totxt spectrum file '%s' not found\n", totxt_filename);
-        fclose(error_file);
+    if (argc < 4) {
+        printf("Lambda value for regularization (0 for pure least squares)\n");
+        scanf("%lf",&lambda);
+    } else {
+        sscanf(argv[3], "%lf",&lambda);
+    }
+
+
+// ----------------------------------------------------------------------------------------
+    if (strncmp(type, "totxt", 5) == 0) {
+        spec = read_totxt_file_meta(totxt_filename);
+    } else {
+        printf("type could not be determined. Exit!");
         exit(1);
     }
+    spec.lambda = lambda;
+    TD1 = spec.TD1;
+    TD2 = spec.TD2;
+    left = spec.left;
+    right = spec.right;
+    vector<double> F1_sum(TD2,0.);
 
-    int state=0;
-    while ((fgets(buffer, sizeof(buffer), fp) != NULL)||(state<3)) {
-        if(buffer[0]=='#'){
-                sscanf(buffer,"%c %s",&pound,word);
-                if(strcmp(word,"F2LEFT")==0){
-                    sscanf(buffer,"%c %s %s %lf %s %s %s %lf",&pound,word,word,&left,word,word,word,&right);
-                    sprintf(word,"void");
-                    state++;
-                }
-                else if(strcmp(word,"NROWS")==0){
-                    sscanf(buffer,"%c %s %s %d",&pound,word,word,&TD1);
-                    sprintf(word,"void");
-                    state++;
-                }
-                else if(strcmp(word,"NCOLS")==0){
-                    sscanf(buffer,"%c %s %s %d",&pound,word,word,&TD2);
-                    sprintf(word,"void");
-                    state++;
-                }
-            }
-    }
-    fclose(fp);
-    width=left-right;
+    width=spec.sw;
     delta=width/TD2;
 
-    //creating the data structures
-    struct data spec;
-    spec.spectrum.resize(TD2);
-    spec.F2_sum.resize(TD2,0.);
-    spec.F1_sum.resize(TD2,0.);
-    spec.TD2=TD2;
-    spec.TD1=TD1;
-    spec.lambda=lambda;
-    vector<double> F1_sum(TD2,0.);
-    for(i=0;i<TD2;i++){
-        spec.spectrum[i].resize(TD2,0.);
-    }
-
-    //reading the spectrum intensities and storing them as a sheared spectrum TD2xTD2
-    fp=fopen(totxt_filename,"r");
-    for(j=0;j<TD1;j++){
-        for(i=0; i<TD2; i++){
-            fgets(buffer, sizeof(buffer), fp);
-            if(buffer[0]=='#'){
-                i--;
-            }
-            else{
-                int F1_index=-TD1/2+i+j;
-                if((F1_index>0)&&(F1_index<TD2)){
-                    sscanf(buffer,"%lf",&spec.spectrum[F1_index][i]);
-                    if(spec.spectrum[F1_index][i]<0.)
-                        spec.spectrum[F1_index][i]=0.;
-                }
-            }
-        }
-    }
-    fclose(fp);
 
     //Saving the original 2D spectrum as a *.spe file
     fp=fopen("original_spectrum.spe","w");
