@@ -1,3 +1,7 @@
+#include <complex>
+#include <vector>
+#include <string>
+
 // Structure pour stocker les paramètres du spectre
 struct SSpectrum { // Simpson spectrum or FID structure
     int NP=1;         // Nombre de points dans la dimension directe
