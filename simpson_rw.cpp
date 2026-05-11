@@ -34,7 +34,7 @@ bool readSimpsonFile(const std::string& filename, SSpectrum& spec) {
                 iss >> spec.NP;
             } else if (param == "SW") {
                 iss >> spec.SW;
-            } else if (param == "REF") {
+            } else if (param == "REF") { // REF is the position of 0 ppm in Hz with respect to center of spectrum (carrier)
                 iss >> spec.REF;
             } else if (param == "SFREQ") {
                 iss >> spec.SFREQ;
