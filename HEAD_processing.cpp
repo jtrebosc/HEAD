@@ -10,9 +10,9 @@
 #include <omp.h>
 #include <vector>
 #include <gsl/gsl_multimin.h>
-#include "decon.hpp"
 using namespace std;
 
+#include "decon.hpp"
 #include "simpson_rw.cpp"
 
 const double HLarmor = 1.;
@@ -24,6 +24,8 @@ struct DataStruct{
     double sw1;
     double left;
     double right;
+    double left1;
+    double right1;
     double lambda;
     vector<int> index;
     vector< vector<double> > spectrum;
@@ -45,11 +47,14 @@ DataStruct importSimpson(char* filename) {
     spec.TD1 = sspec.NI;
     spec.left = sspec.SW/2*(sspec.NP-1)/(sspec.NP)-sspec.REF;
     spec.right = -sspec.SW/2-sspec.REF;
+    spec.left1 = sspec.SW1/2*(sspec.NI-1)/(sspec.NI)-sspec.REF1;
+    spec.right1 = -sspec.SW1/2-sspec.REF1;
     spec.sw = sspec.SW;
     spec.sw1 = sspec.SW1;
     spec.F2_sum.resize(spec.TD2,0.);
     spec.F1_sum.resize(spec.TD2,0.);
     spec.spectrum.resize(spec.TD2);
+    spec.lambda = 0.;
     for(int i=0;i<spec.TD2;i++){
         spec.spectrum[i].resize(spec.TD2,0.);
     }
@@ -130,17 +135,21 @@ DataStruct readMatrixFile_ (char* filename) {
     DataStruct spec;
     int TD2 = x_values.size();
     int TD1 = y_values.size();
-    spec.left = x_values[0];
-    spec.right = x_values[TD2-1];
+    double left = x_values[0];
+    double right = x_values[TD2-1];
     double left1 = y_values[0];
     double right1 = y_values[TD1-1];
+    spec.TD2=TD2;
+    spec.TD1=TD1;
+    spec.left = left;
+    spec.right = right;
+    spec.left1 = left1;
+    spec.right1 = right1;
     spec.sw = abs(left-right)/(TD2-1)*TD2;
     spec.sw1 = abs(left1-right1)/(TD1-1)*TD1;
     spec.spectrum.resize(TD2);
     spec.F2_sum.resize(TD2,0.);
     spec.F1_sum.resize(TD2,0.);
-    spec.TD2=TD2;
-    spec.TD1=TD1;
     spec.lambda=0.0;
     for(int i=0;i<TD2;i++){
         spec.spectrum[i].resize(TD2,0.);
@@ -207,17 +216,17 @@ DataStruct read_totxt_file_meta(char *totxt_filename) {
 
     //creating the data structure
     DataStruct spec;
+    spec.TD2=TD2;
+    spec.TD1=TD1;
     spec.left = left;
     spec.right = right;
-    left1 = left1;
-    right1 = right1;
+    spec.left1 = left1;
+    spec.right1 = right1;
     spec.sw = abs(left-right)/(TD2-1)*TD2;
     spec.sw1 = abs(left1-right1)/(TD1-1)*TD1;
     spec.spectrum.resize(TD2);
     spec.F2_sum.resize(TD2,0.);
     spec.F1_sum.resize(TD2,0.);
-    spec.TD2=TD2;
-    spec.TD1=TD1;
     spec.lambda=0.0;
     for(i=0;i<TD2;i++){
         spec.spectrum[i].resize(TD2,0.);
