@@ -20,6 +20,7 @@ struct DataStruct{
     int TD1;
     int TD2;
     int hetTD1;
+    int hetTD2;
     double sw;
     double left;
     double right;
@@ -27,6 +28,8 @@ struct DataStruct{
     double left1;
     double right1;
     double hetsw1;
+    double hetleft;
+    double hetright;
     double hetleft1;
     double hetright1;
     double lambda;
@@ -107,10 +110,39 @@ DataStruct importSimpson(char* filename, char *filename1, int datatype) {
         cout << "Cannot read input file: " << sfilename;
         exit(1);
     }
+    spec.hetTD2 = sspec.NP;
     spec.hetTD1 = sspec.NI;
     spec.hetleft1 = -sspec.SW1/2-sspec.REF1;
     spec.hetright1 = sspec.SW1/2*(sspec.NI-1)/(sspec.NI)-sspec.REF1;
     spec.hetsw1 = sspec.SW1;
+
+    if ((spec.TD2 != spec.hetTD2) && (spec.left != spec.hetleft) && (spec.right != spec.hetright)) {
+        FILE *error_file;
+        error_file=fopen("error.txt","a");
+        fprintf(error_file, "\nERROR: the correlation spectrum must have same F2 acquisition window as HEAD spectrum.\n");
+        fclose(error_file);
+        exit(1);
+    }
+
+
+    if (datatype==2) {
+        if ((spec.hetTD1 != spec.hetTD2) && (spec.hetleft1 != spec.hetleft) && (spec.hetright1 != spec.hetright)) {
+            FILE *error_file;
+            error_file=fopen("error.txt","a");
+            fprintf(error_file, "\nERROR: the HOMCOR must have same acquisition window in F1 and F2.\n");
+            fclose(error_file);
+            exit(1);
+        }
+    }
+    if (datatype==3) {
+        if (spec.hetTD1 != spec.hetTD2*2) {
+            FILE *error_file;
+            error_file=fopen("error.txt","a");
+            fprintf(error_file, "\nERROR: for DQSQ, the F1 dimension must have twice the point of F2 dimension.\n");
+            fclose(error_file);
+            exit(1);
+        }
+    }
 
     int TD1X = spec.hetTD1;
     if(datatype==3)//DSSQ into a SQSQ format
@@ -224,6 +256,8 @@ DataStruct readMatrixFile2 (char* filename, char* filename1, int datatype) {
     double right1 = y_values[y_values.size()-1];
 
     matrix1 = read_csv_matrix(filename1, &x1_values, &y1_values);
+    double hetleft = x1_values[0];
+    double hetright = x1_values[x_values.size()-1];
     double hetleft1 = y1_values[0];
     double hetright1 = y1_values[y1_values.size()-1];
 
@@ -243,6 +277,8 @@ DataStruct readMatrixFile2 (char* filename, char* filename1, int datatype) {
     spec.right = right>left?right:left;
     spec.left1 = right1<left1?right1:left1;
     spec.right1 = right1>left1?right1:left1;
+    spec.hetleft = hetright<hetleft?hetright:hetleft;
+    spec.hetright = hetright>hetleft?hetright:hetleft;
     spec.hetleft1 = hetright1<hetleft1?hetright1:hetleft1;
     spec.hetright1 = hetright1>hetleft1?hetright1:hetleft1;
     spec.sw = (right-left)/(TD2-1)*TD2;
@@ -250,6 +286,35 @@ DataStruct readMatrixFile2 (char* filename, char* filename1, int datatype) {
     spec.hetsw1 = (hetright1-hetleft1)/(TD1X-1)*TD1X;
     spec.F2_sum.resize(TD2,0.);
     spec.F1_sum.resize(TD2,0.);
+
+    if ((spec.TD2 != spec.hetTD2) && (spec.left != spec.hetleft) && (spec.right != spec.hetright)) {
+        FILE *error_file;
+        error_file=fopen("error.txt","a");
+        fprintf(error_file, "\nERROR: the correlation spectrum must have same F2 acquisition window as HEAD spectrum.\n");
+        fclose(error_file);
+        exit(1);
+    }
+
+
+    if (datatype==2) {
+        if ((spec.hetTD1 != spec.hetTD2) && (spec.hetleft1 != spec.hetleft) && (spec.hetright1 != spec.hetright)) {
+            FILE *error_file;
+            error_file=fopen("error.txt","a");
+            fprintf(error_file, "\nERROR: the HOMCOR must have same acquisition window in F1 and F2.\n");
+            fclose(error_file);
+            exit(1);
+        }
+    }
+    if (datatype==3) {
+        if (spec.hetTD1 != spec.hetTD2*2) {
+            FILE *error_file;
+            error_file=fopen("error.txt","a");
+            fprintf(error_file, "\nERROR: for DQSQ, the F1 dimension must have twice the point of F2 dimension.\n");
+            fclose(error_file);
+            exit(1);
+        }
+    }
+
     spec.spectrum.resize(TD2);
     spec.spectrum_scaled.resize(TD2);
     for(int i=0;i<TD2;i++){
