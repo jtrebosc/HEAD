@@ -64,7 +64,7 @@ DataStruct importSimpson(char* filename) {
         for(int i=0; i<spec.TD2; i++){
                 int F1_index=-spec.TD1/2+i+j;
                 if((F1_index>0)&&(F1_index<spec.TD2)){
-                    spec.spectrum[F1_index][i] = sspec.ComplexData[j][i].real();
+                    spec.spectrum[F1_index][i] = sspec.ComplexData[spec.TD1-j][spec.TD2-i].real();
                     if(spec.spectrum[F1_index][i]<0.)
                         spec.spectrum[F1_index][i]=0.;
                 }
@@ -159,7 +159,7 @@ DataStruct readMatrixFile_ (char* filename) {
         for(int i=0; i<TD2; i++){
                 int F1_index=-TD1/2+i+j;
                 if((F1_index>0)&&(F1_index<TD2)){
-                    spec.spectrum[F1_index][i] = matrix[i][j];
+                    spec.spectrum[F1_index][i] = matrix[TD2-i][TD1-j];
                     if(spec.spectrum[F1_index][i]<0.)
                         spec.spectrum[F1_index][i]=0.;
                 }
