@@ -22,13 +22,13 @@ struct DataStruct{
     int TD2;
     double sw;
     double sw1;
-    double left;
-    double right;
+    double left; // The left end of spectrum which is by nmr convention the high frequency side
+    double right; // The riht end of spectrum which is by nmr convention the low frequency side
     double left1;
     double right1;
     double lambda;
     vector<int> index;
-    vector< vector<double> > spectrum;
+    vector< vector<double> > spectrum; // The 2D matrix to store the sheared spectrum
     vector<double> F2_sum;
     vector<double> F1_sum;
 } ;
