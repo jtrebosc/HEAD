@@ -69,26 +69,26 @@ DataStruct importSimpson(char* filename, char *filename1, int datatype) {
     spec.left1 = -sspec.SW1/2-sspec.REF1;
     spec.right1 = sspec.SW1/2*(sspec.NI-1)/(sspec.NI)-sspec.REF1;
     spec.sw1 = sspec.SW1;
-    spec.F2_sum.resize(spec.TD2,0.);
-    spec.F1_sum.resize(spec.TD2,0.);
+    spec.F2_sum.resize(spec.TD2, 0.);
+    spec.F1_sum.resize(spec.TD2, 0.);
     spec.spectrum.resize(spec.TD2);
-    for(int i=0;i<spec.TD2;i++){
-        spec.spectrum[i].resize(spec.TD2,0.);
+    for (int i = 0; i < spec.TD2; i++) {
+        spec.spectrum[i].resize(spec.TD2, 0.);
     }
     spec.spectrum_scaled.resize(spec.TD2);
-    for(int i=0;i<spec.TD2;i++){
-        spec.spectrum_scaled[i].resize(spec.TD2,0.);
+    for (int i = 0; i < spec.TD2; i++) {
+        spec.spectrum_scaled[i].resize(spec.TD2, 0.);
     }
 
     // store spec.spectrum from matrix
 
-    for(int j=0;j<spec.TD1;j++){
-        for(int i=0; i<spec.TD2; i++){
-                int F1_index=-spec.TD1/2+i+j;
-                if((F1_index>0)&&(F1_index<spec.TD2)){
+    for (int j = 0; j < spec.TD1; j++) {
+        for (int i = 0; i<spec.TD2; i++) {
+                int F1_index = -spec.TD1/2 +i+j;
+                if ((F1_index > 0) && (F1_index < spec.TD2)) {
                     spec.spectrum[F1_index][i] = sspec.ComplexData[j][i].real();
-                    if(spec.spectrum[F1_index][i]<0.)
-                        spec.spectrum[F1_index][i]=0.;
+                    if (spec.spectrum[F1_index][i] < 0.)
+                        spec.spectrum[F1_index][i] = 0.;
                 }
         }
     }
@@ -118,26 +118,26 @@ DataStruct importSimpson(char* filename, char *filename1, int datatype) {
 
     if ((spec.TD2 != spec.hetTD2) && (spec.left != spec.hetleft) && (spec.right != spec.hetright)) {
         FILE *error_file;
-        error_file=fopen("error.txt","a");
+        error_file = fopen("error.txt", "a");
         fprintf(error_file, "\nERROR: the correlation spectrum must have same F2 acquisition window as HEAD spectrum.\n");
         fclose(error_file);
         exit(1);
     }
 
 
-    if (datatype==2) {
+    if (datatype == 2) {
         if ((spec.hetTD1 != spec.hetTD2) && (spec.hetleft1 != spec.hetleft) && (spec.hetright1 != spec.hetright)) {
             FILE *error_file;
-            error_file=fopen("error.txt","a");
+            error_file = fopen("error.txt", "a");
             fprintf(error_file, "\nERROR: the HOMCOR must have same acquisition window in F1 and F2.\n");
             fclose(error_file);
             exit(1);
         }
     }
-    if (datatype==3) {
+    if (datatype == 3) {
         if (spec.hetTD1 != spec.hetTD2*2) {
             FILE *error_file;
-            error_file=fopen("error.txt","a");
+            error_file = fopen("error.txt", "a");
             fprintf(error_file, "\nERROR: for DQSQ, the F1 dimension must have twice the point of F2 dimension.\n");
             fclose(error_file);
             exit(1);
@@ -145,29 +145,29 @@ DataStruct importSimpson(char* filename, char *filename1, int datatype) {
     }
 
     int TD1X = spec.hetTD1;
-    if(datatype==3)//DSSQ into a SQSQ format
-        TD1X/=2;
+    if (datatype == 3)//DSSQ into a SQSQ format
+        TD1X /= 2;
     spec.hetspectrum.resize(TD1X);
-    for(int i=0;i<TD1X;i++){
-        spec.hetspectrum[i].resize(spec.TD2,0.);
+    for (int i = 0; i < TD1X; i++) {
+        spec.hetspectrum[i].resize(spec.TD2, 0.);
     }
-    spec.hetF1_sum.resize(TD1X,0.);
+    spec.hetF1_sum.resize(TD1X, 0.);
 
     // store spec.hetspectrum from matrix1
-    if (datatype!=3) {
-        for(int j=0;j<TD1X;j++){
-            for(int i=0; i<spec.TD2; i++){
+    if (datatype != 3) {
+        for (int j = 0; j < TD1X; j++) {
+            for (int i = 0; i < spec.TD2; i++) {
                 spec.hetspectrum[j][i] = sspec.ComplexData[j][i].real();
             }
         }
     } else { //DQSQ reading into SQSQ
-        for(int j=0;j<TD1X*2;j++){
-            for(int i=0; i<spec.TD2; i++){
-                int F1_index=-i+j;
-                if((F1_index>0)&&(F1_index<spec.TD2)){
+        for (int j = 0; j < TD1X*2; j++) {
+            for (int i = 0; i < spec.TD2; i++) {
+                int F1_index = -i+j;
+                if ((F1_index > 0) && (F1_index < spec.TD2)) {
                     spec.hetspectrum[F1_index][i] = sspec.ComplexData[j][i].real();
-                    if(spec.hetspectrum[F1_index][i]<0.)
-                        spec.hetspectrum[F1_index][i]=0.;
+                    if (spec.hetspectrum[F1_index][i] < 0.)
+                        spec.hetspectrum[F1_index][i] = 0.;
                 }
             }
         }
@@ -264,15 +264,15 @@ DataStruct readMatrixFile2 (char* filename, char* filename1, int datatype) {
     int TD2 = x_values.size();
     int TD1 = y_values.size();
     int TD1X = y1_values.size();
-    if(datatype==3)//DSSQ into a SQSQ format
-        TD1X/=2;
+    if (datatype == 3)//DSSQ into a SQSQ format
+        TD1X /= 2;
 
     // Create DataStruct and update sizes
     DataStruct spec;
     spec.lambda = 0.;
-    spec.TD2=TD2;
-    spec.TD1=TD1;
-    spec.hetTD1=TD1X;
+    spec.TD2 = TD2;
+    spec.TD1 = TD1;
+    spec.hetTD1 = TD1X;
     spec.left = right<left?right:left;
     spec.right = right>left?right:left;
     spec.left1 = right1<left1?right1:left1;
@@ -284,31 +284,31 @@ DataStruct readMatrixFile2 (char* filename, char* filename1, int datatype) {
     spec.sw = (right-left)/(TD2-1)*TD2;
     spec.sw1 = (right1-left1)/(TD1-1)*TD1;
     spec.hetsw1 = (hetright1-hetleft1)/(TD1X-1)*TD1X;
-    spec.F2_sum.resize(TD2,0.);
-    spec.F1_sum.resize(TD2,0.);
+    spec.F2_sum.resize(TD2, 0.);
+    spec.F1_sum.resize(TD2, 0.);
 
     if ((spec.TD2 != spec.hetTD2) && (spec.left != spec.hetleft) && (spec.right != spec.hetright)) {
         FILE *error_file;
-        error_file=fopen("error.txt","a");
+        error_file = fopen("error.txt", "a");
         fprintf(error_file, "\nERROR: the correlation spectrum must have same F2 acquisition window as HEAD spectrum.\n");
         fclose(error_file);
         exit(1);
     }
 
 
-    if (datatype==2) {
+    if (datatype == 2) {
         if ((spec.hetTD1 != spec.hetTD2) && (spec.hetleft1 != spec.hetleft) && (spec.hetright1 != spec.hetright)) {
             FILE *error_file;
-            error_file=fopen("error.txt","a");
+            error_file = fopen("error.txt", "a");
             fprintf(error_file, "\nERROR: the HOMCOR must have same acquisition window in F1 and F2.\n");
             fclose(error_file);
             exit(1);
         }
     }
-    if (datatype==3) {
+    if (datatype == 3) {
         if (spec.hetTD1 != spec.hetTD2*2) {
             FILE *error_file;
-            error_file=fopen("error.txt","a");
+            error_file = fopen("error.txt", "a");
             fprintf(error_file, "\nERROR: for DQSQ, the F1 dimension must have twice the point of F2 dimension.\n");
             fclose(error_file);
             exit(1);
@@ -317,59 +317,59 @@ DataStruct readMatrixFile2 (char* filename, char* filename1, int datatype) {
 
     spec.spectrum.resize(TD2);
     spec.spectrum_scaled.resize(TD2);
-    for(int i=0;i<TD2;i++){
-        spec.spectrum[i].resize(TD2,0.);
-        spec.spectrum_scaled[i].resize(TD2,0.);
+    for (int i = 0; i < TD2; i++) {
+        spec.spectrum[i].resize(TD2, 0.);
+        spec.spectrum_scaled[i].resize(TD2, 0.);
     }
     //HETCOR spectrum to be fitted
     spec.hetspectrum.resize(TD1X);
-    for(int i=0;i<TD1X;i++){
-        spec.hetspectrum[i].resize(TD2,0.);
+    for (int i = 0; i < TD1X; i++) {
+        spec.hetspectrum[i].resize(TD2, 0.);
     }
-    spec.hetF1_sum.resize(TD1X,0.);
+    spec.hetF1_sum.resize(TD1X, 0.);
 
     // store spec.spectrum from matrix
-    for(int j=0;j<TD1;j++){
-        for(int i=0; i<TD2; i++){
-            int F1_index=-TD1/2+i+j;
-            if((F1_index>0)&&(F1_index<TD2)){
+    for (int j = 0; j < TD1; j++) {
+        for (int i = 0; i < TD2; i++) {
+            int F1_index = -TD1/2+i+j;
+            if ((F1_index > 0) && (F1_index < TD2)) {
                 spec.spectrum[F1_index][i] = matrix[i][j];
-                if(spec.spectrum[F1_index][i]<0.)
-                    spec.spectrum[F1_index][i]=0.;
-                spec.spectrum_scaled[F1_index][i]=spec.spectrum[F1_index][i];
+                if (spec.spectrum[F1_index][i] < 0.)
+                    spec.spectrum[F1_index][i] = 0.;
+                spec.spectrum_scaled[F1_index][i] = spec.spectrum[F1_index][i];
             }
         }
     }
 
     // update spectrum_scaled
-    for(int i=0;i<TD2;i++){
+    for (int i = 0; i < TD2; i++) {
         double maximum=0;
-        for(int j=0;j<TD2;j++){
-            if(spec.spectrum_scaled[j][i]>maximum)
-                maximum=spec.spectrum_scaled[j][i];
+        for (int j = 0; j < TD2; j++) {
+            if (spec.spectrum_scaled[j][i] > maximum)
+                maximum = spec.spectrum_scaled[j][i];
         }
-        if(maximum>0.){
-            for(int j=0;j<TD2;j++){
-            spec.spectrum_scaled[j][i]= spec.spectrum_scaled[j][i]/maximum;
+        if (maximum > 0.) {
+            for (int j = 0; j < TD2; j++) {
+            spec.spectrum_scaled[j][i] = spec.spectrum_scaled[j][i]/maximum;
             }
         }
     }
 
     // store spec.hetspectrum from matrix1
-    if (datatype!=3) {
-        for(int j=0;j<TD1X;j++){
-            for(int i=0; i<TD2; i++){
+    if (datatype != 3) {
+        for (int j = 0; j < TD1X; j++) {
+            for (int i = 0; i < TD2; i++) {
                 spec.hetspectrum[j][i] = matrix1[i][j];
             }
         }
     } else { //DQSQ reading into SQSQ
-        for(int j=0;j<TD1X*2;j++){
-            for(int i=0; i<TD2; i++){
-                int F1_index=-i+j;
-                if((F1_index>0)&&(F1_index<TD2)){
+        for (int j = 0; j < TD1X*2; j++) {
+            for (int i = 0; i < TD2; i++) {
+                int F1_index = -i+j;
+                if ((F1_index>0)&&(F1_index<TD2)) {
                     spec.hetspectrum[F1_index][i] = matrix1[i][j];
-                    if(spec.hetspectrum[F1_index][i]<0.)
-                        spec.hetspectrum[F1_index][i]=0.;
+                    if (spec.hetspectrum[F1_index][i] < 0.)
+                        spec.hetspectrum[F1_index][i] = 0.;
                 }
             }
         }
@@ -381,41 +381,41 @@ DataStruct readMatrixFile2 (char* filename, char* filename1, int datatype) {
 DataStruct read_totxt_file_meta(char *totxt_filename, char *totxt_filename1, int datatype) {
     FILE *fp;
     char buffer[256], word[24], pound;
-    int i=0, j=0, TD1, TD2, TD1X, k, junk;
+    int i = 0, j = 0, TD1, TD2, TD1X, k, junk;
     double left, right, left1, right1, hetleft1, hetright1;
 
     //reading the header file to get TD1, TD2, and the spectral width and offset in F2.
-    fp=fopen(totxt_filename,"r");
-    if(fp==NULL){
+    fp=fopen(totxt_filename, "r");
+    if (fp == NULL) {
         FILE *error_file;
-        error_file=fopen("error.txt","a");
+        error_file = fopen("error.txt", "a");
         fprintf(error_file, "\nERROR: totxt spectrum file '%s' not found\n", totxt_filename);
         fclose(error_file);
         exit(1);
     }
 
-    int state=0;
+    int state = 0;
     while ((fgets(buffer, sizeof(buffer), fp) != NULL)||(state<3)) {
-        if(buffer[0]=='#'){
-                sscanf(buffer,"%c %s",&pound,word);
-                if(strcmp(word,"F2LEFT")==0){
-                    sscanf(buffer,"%c %s %s %lf %s %s %s %lf",&pound,word,word,&left,word,word,word,&right);
-                    sprintf(word,"void");
+        if (buffer[0] == '#') {
+                sscanf(buffer, "%c %s", &pound, word);
+                if (strcmp(word, "F2LEFT") == 0) {
+                    sscanf(buffer, "%c %s %s %lf %s %s %s %lf", &pound, word, word, &left, word, word, word, &right);
+                    sprintf(word, "void");
                     state++;
                 }
-                else if(strcmp(word,"F1LEFT")==0){
-                    sscanf(buffer,"%c %s %s %lf %s %s %s %lf",&pound,word,word,&left1,word,word,word,&right1);
-                    sprintf(word,"void");
+                else if (strcmp(word, "F1LEFT")==0) {
+                    sscanf(buffer, "%c %s %s %lf %s %s %s %lf", &pound, word, word, &left1, word, word, word, &right1);
+                    sprintf(word, "void");
                     state++;
                 }
-                else if(strcmp(word,"NROWS")==0){
-                    sscanf(buffer,"%c %s %s %d",&pound,word,word,&TD1);
-                    sprintf(word,"void");
+                else if (strcmp(word, "NROWS")==0) {
+                    sscanf(buffer, "%c %s %s %d", &pound, word, word, &TD1);
+                    sprintf(word, "void");
                     state++;
                 }
-                else if(strcmp(word,"NCOLS")==0){
-                    sscanf(buffer,"%c %s %s %d",&pound,word,word,&TD2);
-                    sprintf(word,"void");
+                else if (strcmp(word, "NCOLS")==0) {
+                    sscanf(buffer, "%c %s %s %d", &pound, word, word, &TD2);
+                    sprintf(word, "void");
                     state++;
                 }
             }
@@ -424,49 +424,49 @@ DataStruct read_totxt_file_meta(char *totxt_filename, char *totxt_filename1, int
 
     // read second file header
     state=0;
-    fp=fopen(totxt_filename1,"r");
-    if(fp==NULL){
+    fp=fopen(totxt_filename1, "r");
+    if (fp==NULL) {
         FILE *error_file;
-        error_file=fopen("error.txt","a");
+        error_file=fopen("error.txt", "a");
         fprintf(error_file, "\nERROR: totxt spectrum file '%s' not found\n", totxt_filename1);
         fclose(error_file);
         exit(1);
     }
     while ((fgets(buffer, sizeof(buffer), fp) != NULL)||(state<3)) {
-        if(buffer[0]=='#'){
-                sscanf(buffer,"%c %s",&pound,word);
-                if(strcmp(word,"F1LEFT")==0){
-                    sscanf(buffer,"%c %s %s %lf %s %s %s %lf",&pound,word,word,&hetleft1,word,word,word,&hetright1);
-                    sprintf(word,"void");
+        if (buffer[0]=='#') {
+                sscanf(buffer, "%c %s", &pound, word);
+                if (strcmp(word, "F1LEFT")==0) {
+                    sscanf(buffer, "%c %s %s %lf %s %s %s %lf", &pound, word, word, &hetleft1, word, word, word, &hetright1);
+                    sprintf(word, "void");
                     state++;
                 }
-                else if(strcmp(word,"NROWS")==0){
-                    sscanf(buffer,"%c %s %s %d",&pound,word,word,&TD1X);
-                    sprintf(word,"void");
+                else if (strcmp(word, "NROWS")==0) {
+                    sscanf(buffer, "%c %s %s %d", &pound, word, word, &TD1X);
+                    sprintf(word, "void");
                     state++;
-                    if((datatype==2)&&(TD1X!=TD2)){
+                    if ((datatype==2)&&(TD1X!=TD2)) {
                         FILE *error_file;
-                        error_file=fopen("error.txt","a");
+                        error_file=fopen("error.txt", "a");
                         fprintf(error_file, "\nERROR: the two TD2 values do not match\n");
                         fclose(error_file);
                         exit(1);
                     }
-                    else if((datatype==3)&&(TD1X!=2*TD2)){
+                    else if ((datatype==3)&&(TD1X!=2*TD2)) {
                         FILE *error_file;
-                        error_file=fopen("error.txt","a");
+                        error_file=fopen("error.txt", "a");
                         fprintf(error_file, "\nERROR: the two TD2 values do not match\n");
                         fclose(error_file);
                         exit(1);
                     }
                 }
 
-                else if(strcmp(word,"NCOLS")==0){
-                    sscanf(buffer,"%c %s %s %d",&pound,word,word,&junk);
-                    sprintf(word,"void");
+                else if (strcmp(word, "NCOLS")==0) {
+                    sscanf(buffer, "%c %s %s %d", &pound, word, word, &junk);
+                    sprintf(word, "void");
                     state++;
-                    if(junk!=TD2){
+                    if (junk!=TD2) {
                         FILE *error_file;
-                        error_file=fopen("error.txt","a");
+                        error_file=fopen("error.txt", "a");
                         fprintf(error_file, "\nERROR: the two TD2 values do not match\n");
                         fclose(error_file);
                         exit(1);
@@ -476,7 +476,7 @@ DataStruct read_totxt_file_meta(char *totxt_filename, char *totxt_filename1, int
     }
     fclose(fp);
 
-    if(datatype==3)//DSSQ into a SQSQ format
+    if (datatype==3)//DSSQ into a SQSQ format
         TD1X/=2;
 
     //creating the data structures
@@ -492,32 +492,31 @@ DataStruct read_totxt_file_meta(char *totxt_filename, char *totxt_filename1, int
     spec.hetright1 = (hetright1<hetleft1)?hetleft1:hetright1;
     spec.spectrum.resize(TD2);
     spec.spectrum_scaled.resize(TD2);
-    spec.F2_sum.resize(TD2,0.);
-    spec.F1_sum.resize(TD2,0.);
-    for(i=0;i<TD2;i++){
-        spec.spectrum[i].resize(TD2,0.);
-        spec.spectrum_scaled[i].resize(TD2,0.);
+    spec.F2_sum.resize(TD2, 0.);
+    spec.F1_sum.resize(TD2, 0.);
+    for (i=0; i<TD2; i++) {
+        spec.spectrum[i].resize(TD2, 0.);
+        spec.spectrum_scaled[i].resize(TD2, 0.);
     }
     //HETCOR spectrum to be fitted
     spec.hetspectrum.resize(TD1X);
-    for(i=0;i<TD1X;i++){
-        spec.hetspectrum[i].resize(TD2,0.);
+    for (i=0; i<TD1X; i++) {
+        spec.hetspectrum[i].resize(TD2, 0.);
     }
-    spec.hetF1_sum.resize(TD1X,0.);
+    spec.hetF1_sum.resize(TD1X, 0.);
 
     //reading the spectrum intensities and storing them as a sheared spectrum TD2xTD2
-    fp=fopen(totxt_filename,"r");
-    for(j=0;j<TD1;j++){
-        for(i=0; i<TD2; i++){
+    fp=fopen(totxt_filename, "r");
+    for (j=0; j<TD1; j++) {
+        for (i=0; i<TD2; i++) {
             fgets(buffer, sizeof(buffer), fp);
-            if(buffer[0]=='#'){
+            if (buffer[0]=='#') {
                 i--;
-            }
-            else{
+            } else {
                 int F1_index=-TD1/2+i+j;
-                if((F1_index>0)&&(F1_index<TD2)){
-                    sscanf(buffer,"%lf",&spec.spectrum[F1_index][i]);
-                    if(spec.spectrum[F1_index][i]<0.)
+                if ((F1_index>0)&&(F1_index<TD2)) {
+                    sscanf(buffer, "%lf", &spec.spectrum[F1_index][i]);
+                    if (spec.spectrum[F1_index][i]<0.)
                         spec.spectrum[F1_index][i]=0.;
 
                     spec.spectrum_scaled[F1_index][i]=spec.spectrum[F1_index][i];
@@ -526,31 +525,31 @@ DataStruct read_totxt_file_meta(char *totxt_filename, char *totxt_filename1, int
         }
     }
     fclose(fp);
-    for(i=0;i<TD2;i++){
+    for (i=0; i<TD2; i++) {
         double maximum=0;
-        for(j=0;j<TD2;j++){
-            if(spec.spectrum_scaled[j][i]>maximum)
+        for (j=0; j<TD2; j++) {
+            if (spec.spectrum_scaled[j][i]>maximum)
                 maximum=spec.spectrum_scaled[j][i];
         }
-        if(maximum>0.){
-        for(j=0;j<TD2;j++){
+        if (maximum>0.) {
+        for (j=0; j<TD2; j++) {
             spec.spectrum_scaled[j][i]= spec.spectrum_scaled[j][i]/maximum;
         }}
     }
 
     if (datatype!=3) {
         //reading the HETCOR spectrum intensities
-        fp=fopen(totxt_filename1,"r");
-        for(j=0;j<TD1X;j++){
-            for(i=0; i<TD2; i++){
+        fp=fopen(totxt_filename1, "r");
+        for (j=0; j<TD1X; j++) {
+            for (i=0; i<TD2; i++) {
                 fgets(buffer, sizeof(buffer), fp);
                 if (buffer[0]=='#') {
                     i--;
                 } else {
-                        sscanf(buffer,"%lf",&spec.hetspectrum[j][i]);
-                        if(spec.hetspectrum[j][i]<0.)
+                        sscanf(buffer, "%lf", &spec.hetspectrum[j][i]);
+                        if (spec.hetspectrum[j][i]<0.)
                             spec.hetspectrum[j][i]=0.;
-                      /*  for(k=0;k<TD2;k++){
+                      /*  for (k=0; k<TD2; k++) {
                             spec.spectrum_scaled[j][k][i]*=spec.hetspectrum[j][i];
                         }*/
                 }
@@ -558,21 +557,21 @@ DataStruct read_totxt_file_meta(char *totxt_filename, char *totxt_filename1, int
         }
         fclose(fp);
     } else { //DQSQ reading into SQSQ
-        fp=fopen(totxt_filename1,"r");
-        for(j=0;j<TD1X*2;j++){
-            for(i=0; i<TD2; i++){
+        fp=fopen(totxt_filename1, "r");
+        for (j=0; j<TD1X*2; j++) {
+            for (i=0; i<TD2; i++) {
 
                 int F1_index=-i+j;
 
                 fgets(buffer, sizeof(buffer), fp);
-                if(buffer[0]=='#'){
+                if (buffer[0]=='#') {
                     i--;
                 }
-                else if((F1_index>=0)&&(F1_index<TD2)){
-                        sscanf(buffer,"%lf",&spec.hetspectrum[F1_index][i]);
-                        if(spec.hetspectrum[F1_index][i]<0.)
+                else if ((F1_index>=0)&&(F1_index<TD2)) {
+                        sscanf(buffer, "%lf", &spec.hetspectrum[F1_index][i]);
+                        if (spec.hetspectrum[F1_index][i]<0.)
                             spec.hetspectrum[F1_index][i]=0.;
-                       /* for(k=0;k<TD2;k++){
+                       /* for (k=0; k<TD2; k++) {
                             spec.spectrum_scaled[F1_index][k][i]*=spec.hetspectrum[F1_index][i];
                         }*/
                 }
@@ -584,25 +583,25 @@ DataStruct read_totxt_file_meta(char *totxt_filename, char *totxt_filename1, int
     return spec;
 }
 
-double RMSD(const gsl_vector* weights, void* params){
+double RMSD(const gsl_vector* weights, void* params) {
     //Cost function used to calculate the offset between the experimental F2 spectrum
     //and the predicted isotropic spectrum in F1. Also includes Tikhonov weighting.
 
     //gathering the relevant parameters from the data structure
     DataStruct *spec = (DataStruct*) params;
-    int TD2=spec->TD2,i,j;
+    int TD2=spec->TD2, i, j;
     int TD1=spec->TD1;
-    vector<double> F1_sum(TD2,0.);
-    vector<double> corr_weights(TD2,0.);
+    vector<double> F1_sum(TD2, 0.);
+    vector<double> corr_weights(TD2, 0.);
     double MSD=0., gradient=0., Euc_norm=0.;
-     vector<double> slice(TD2,0.);
-    for(i=0;i<TD2;i++){
+     vector<double> slice(TD2, 0.);
+    for (i=0; i<TD2; i++) {
         slice[i]=spec->hetspectrum[spec->hetindex[spec->slice]][i];
     }
 
     //Derivative of the weights, used for Tikhonov
-    for(i=1;i<spec->index.size();i++){
-        gradient+=abs(gsl_vector_get(weights,i-1)-gsl_vector_get(weights,i));
+    for (i=1; i<spec->index.size(); i++) {
+        gradient+=abs(gsl_vector_get(weights, i-1)-gsl_vector_get(weights, i));
     }
     gradient*=spec->lambda;
 
@@ -611,80 +610,80 @@ double RMSD(const gsl_vector* weights, void* params){
 
     //Calculation of the F1 spectrum
     //looping over the basis spectra
-    for(i=0;i<spec->index.size();i++){
+    for (i=0; i<spec->index.size(); i++) {
         int ii=spec->index[i];
         int start_j= (ii-TD1/2)*(ii>=(TD1/2));
         int end_j= (ii+TD1/2)*((ii+TD1/2)<TD2)+(TD2-1)*((ii+TD1/2)>=TD2);
-       // Euc_norm+= pow(gsl_vector_get(weights,i),2.);
+       // Euc_norm+= pow(gsl_vector_get(weights, i), 2.);
 
         //looping over the data points of each basis spectrum
-        for(j=start_j;j<=end_j;j++){
-                F1_sum[j]=F1_sum[j] + spec->hetspectrum[spec->hetindex[spec->slice]][ii]*spec->spectrum_scaled[j][ii]*abs(gsl_vector_get(weights,i));
+        for (j=start_j; j<=end_j; j++) {
+                F1_sum[j]=F1_sum[j] + spec->hetspectrum[spec->hetindex[spec->slice]][ii]*spec->spectrum_scaled[j][ii]*abs(gsl_vector_get(weights, i));
         }
     }
 
     //Calculation of the mean squared deviation between the calculated F1 spectrum and the F2 spectrum
-    for(i=0;i<TD2;i++){
-        MSD=MSD + pow(F1_sum[i]-slice[i],2.);
+    for (i=0; i<TD2; i++) {
+        MSD=MSD + pow(F1_sum[i]-slice[i], 2.);
     }
 
     return sqrt(MSD)+gradient;
     //return sqrt(MSD)+spec->lambda*Euc_norm;
 }
 
-void gradient(const gsl_vector *var, void *params, gsl_vector *df){
+void gradient(const gsl_vector *var, void *params, gsl_vector *df) {
     //Gradient of the RMSD, used for GSL gradient optimizers
 
     DataStruct *spec = (DataStruct *) params;
-    int var_size=spec->index.size(),i;
+    int var_size=spec->index.size(), i;
     double cost_0 = RMSD(var, params), val[2];
 
-    for(i=0;i<var_size;i++){
-        val[0]=gsl_vector_get(var,i);
+    for (i=0; i<var_size; i++) {
+        val[0]=gsl_vector_get(var, i);
         val[1]=val[0]+0.0001;
-        gsl_vector_set(var,i,val[1]);
+        gsl_vector_set(var, i, val[1]);
         gsl_vector_set(df, i, (RMSD(var, params)-cost_0)/(val[1]-val[0]));
-        gsl_vector_set(var,i,val[0]);
+        gsl_vector_set(var, i, val[0]);
     }
 }
 
-void gradient_fdf (const gsl_vector *var, void *params,double *f,gsl_vector *df){
+void gradient_fdf (const gsl_vector *var, void *params, double *f, gsl_vector *df) {
     //Simultaneously calculated the gradient and the value of the RMSD
     //For the GSL gradient optimizers
 
     *f = RMSD(var, params);
     DataStruct *spec = (DataStruct *) params;
-    int var_size=spec->index.size(),i;
+    int var_size=spec->index.size(), i;
     double cost_0 = RMSD(var, params), val[2];
 
-    for(i=0;i<var_size;i++){
-        val[0]=gsl_vector_get(var,i);
+    for (i=0; i<var_size; i++) {
+        val[0]=gsl_vector_get(var, i);
         val[1]=val[0]+0.0001;
-        gsl_vector_set(var,i,val[1]);
+        gsl_vector_set(var, i, val[1]);
         gsl_vector_set(df, i, (RMSD(var, params)-cost_0)/(val[1]-val[0]));
-        gsl_vector_set(var,i,val[0]);
+        gsl_vector_set(var, i, val[0]);
     }
 }
 
-void calc_HETCOR(const gsl_vector* weights, void* params, vector< vector<double> >& iso_spec, int F1_index){
+void calc_HETCOR(const gsl_vector* weights, void* params, vector< vector<double> >& iso_spec, int F1_index) {
     //Function used to integrate over the HEAD spectrum to produce the isotropic spectrum with appropriate intensities
 
     //Gathering parameters from the data structure
     DataStruct *spec = (DataStruct*) params;
-    int TD2=spec->TD2,i,j,ii;
+    int TD2=spec->TD2, i, j, ii;
     int TD1=spec->TD1;
-    vector<double> corr_weights(TD2,0.);
-    vector<double> F2_sum(TD2,0.);
+    vector<double> corr_weights(TD2, 0.);
+    vector<double> F2_sum(TD2, 0.);
 
     //Looping over the basis spectra
-    for(i=0;i<spec->index.size();i++){
+    for (i=0; i<spec->index.size(); i++) {
         ii=spec->index[i];
         int start_j= (ii-TD1/2)*(ii>=(TD1/2));
         int end_j= (ii+TD1/2)*((ii+TD1/2)<TD2)+(TD2-1)*((ii+TD1/2)>=TD2);
 
         //looping over the data points of each basis spectrum
-        for(j=start_j;j<=end_j;j++){
-            F2_sum[ii]=F2_sum[ii] + spec->hetspectrum[spec->hetindex[spec->slice]][ii]*spec->spectrum_scaled[j][ii]*abs(gsl_vector_get(weights,i));
+        for (j=start_j; j<=end_j; j++) {
+            F2_sum[ii]=F2_sum[ii] + spec->hetspectrum[spec->hetindex[spec->slice]][ii]*spec->spectrum_scaled[j][ii]*abs(gsl_vector_get(weights, i));
         }
 
         //saving the isotropic spectrum and weights
@@ -694,9 +693,9 @@ void calc_HETCOR(const gsl_vector* weights, void* params, vector< vector<double>
 
 int main(int argc, char* argv[]) {
     //parameter declaration
-    int TD2, TD1, TD1X, i=0, j=0,k,junk, datatype;
+    int TD2, TD1, TD1X, i=0, j=0, k, junk, datatype;
     char totxt_filename[128], totxt_filename1[128], buffer[256], word[24], pound, *type;
-    double left, right, width,lambda, delta;
+    double left, right, width, lambda, delta;
     double left1, right1, width1, delta1;
     FILE *fp;
 
@@ -706,18 +705,18 @@ int main(int argc, char* argv[]) {
         printf("1 1H-detected HETCOR\n");
         printf("2 SQ-SQ correlation\n");
         printf("3 SQ-DQ correlation\n");
-        scanf("%d",&datatype);
+        scanf("%d", &datatype);
 
         printf("What is the type of input file ?\n\
           Either 'totxt' for the 2D CS-lineshape correlation spectrum converted using totxt?\n\
           Or 'csv' for ssNake csv export.\n\
           Or 'spe' for ssNake simpson export.");
-        scanf("%s",type);
+        scanf("%s", type);
         printf("What is the filename for the 2D CS-lineshape correlation spectrum?\n");
         printf("Note that the digital resolution in F1 and F2 needs to be identical.\n");
-        scanf("%s",totxt_filename);
+        scanf("%s", totxt_filename);
     } else {
-        sscanf(argv[1], "%lf",&datatype);
+        sscanf(argv[1], "%lf", &datatype);
         type = argv[2];
         strcpy(totxt_filename, argv[3]);
         strcpy(totxt_filename1, argv[4]);
@@ -726,9 +725,9 @@ int main(int argc, char* argv[]) {
 
     if (argc < 6) { // min 5 args: COR_type input_type HEAD_filename COR_filename lambda
         printf("Lambda value for regularization (0 for pure least squares)\n");
-        scanf("%lf",&lambda);
+        scanf("%lf", &lambda);
     } else {
-        sscanf(argv[4], "%lf",&lambda);
+        sscanf(argv[4], "%lf", &lambda);
     }
 
 // ----------------------------------------------------------------------------------------
@@ -758,77 +757,77 @@ int main(int argc, char* argv[]) {
     // cout << totxt_filename1 << " : " << spec.hetleft1 << ", " << spec.hetright1 << "-> width=" << spec.hetsw1 << "\n";
     delta1=width1/TD2;
 
-    vector<double> F1_sum(TD2,0.);
+    vector<double> F1_sum(TD2, 0.);
     // cout << "OK2------------------------------------------\n";
 
     //Saving the original 2D spectrum as a *.spe file
-    fp=fopen("original_HEAD.spe","w");
-    fprintf(fp,"SIMP\nNP=%d\nSW=%.2lf\nX0=%.2lf\nSF=%.2lf\nNI=%d\nSW1=%.2lf\nX0_F1=%.2lf\nSF1=%.2lf\nTYPE=SPE\nDATA\n",TD2,width*HLarmor,left*HLarmor,HLarmor,TD1,width1,left1,HLarmor);
-    for(i=0;i<TD1;i++){
-        for(j=0;j<TD2;j++){
+    fp=fopen("original_HEAD.spe", "w");
+    fprintf(fp, "SIMP\nNP=%d\nSW=%.2lf\nX0=%.2lf\nSF=%.2lf\nNI=%d\nSW1=%.2lf\nX0_F1=%.2lf\nSF1=%.2lf\nTYPE=SPE\nDATA\n", TD2, width*HLarmor, left*HLarmor, HLarmor, TD1, width1, left1, HLarmor);
+    for (i=0; i<TD1; i++) {
+        for (j=0; j<TD2; j++) {
             int F1_index=-TD1/2+i+j;
-            if((F1_index>0)&&(F1_index<TD2))
-                fprintf(fp,"%lf   0.0\n",spec.spectrum[F1_index][j]);
-            else fprintf(fp,"0.0   0.0\n");
+            if ((F1_index>0)&&(F1_index<TD2))
+                fprintf(fp, "%lf   0.0\n", spec.spectrum[F1_index][j]);
+            else fprintf(fp, "0.0   0.0\n");
         }
     }
-    fprintf(fp,"%s","END");
+    fprintf(fp, "%s", "END");
     fclose(fp);
 
     //Saving the sheared 2D spectrum as a *.spe file
-    fp=fopen("sheared_HEAD.spe","w");
-    fprintf(fp,"SIMP\nNP=%d\nSW=%.2lf\nX0=%.2lf\nSF=%.2lf\nNI=%d\nSW1=%.2lf\nX0_F1=%.2lf\nSF1=%.2lf\nTYPE=SPE\nDATA\n",\
-                         TD2,width*HLarmor,left*HLarmor,HLarmor,TD2,width*HLarmor,left*HLarmor,HLarmor);
-    for(i=0;i<TD2;i++){
-        for(j=0;j<TD2;j++){
-            fprintf(fp,"%lf   0.0\n",spec.spectrum[i][j]);
+    fp=fopen("sheared_HEAD.spe", "w");
+    fprintf(fp, "SIMP\nNP=%d\nSW=%.2lf\nX0=%.2lf\nSF=%.2lf\nNI=%d\nSW1=%.2lf\nX0_F1=%.2lf\nSF1=%.2lf\nTYPE=SPE\nDATA\n", \
+                         TD2, width*HLarmor, left*HLarmor, HLarmor, TD2, width*HLarmor, left*HLarmor, HLarmor);
+    for (i=0; i<TD2; i++) {
+        for (j=0; j<TD2; j++) {
+            fprintf(fp, "%lf   0.0\n", spec.spectrum[i][j]);
         }
     }
-    fprintf(fp,"%s","END");
+    fprintf(fp, "%s", "END");
     fclose(fp);
 
     //Saving the original HETCOR spectrum as a *.spe file
-    if(datatype!=3){
-    fp=fopen("original_correlation.spe","w");
-    fprintf(fp,"SIMP\nNP=%d\nSW=%.2lf\nX0=%.2lf\nSF=%.2lf\nNI=%d\nSW1=%.2lf\nX0_F1=%.2lf\nSF1=%.2lf\nTYPE=SPE\nDATA\n",TD2,width*HLarmor,left*HLarmor,HLarmor,TD1X,width1*150.0,left1*150.,150.0);
-    for(i=0;i<TD1X;i++){
-        for(j=0;j<TD2;j++){
-            fprintf(fp,"%lf   0.0\n",spec.hetspectrum[i][j]);
+    if (datatype!=3) {
+        fp=fopen("original_correlation.spe", "w");
+        fprintf(fp, "SIMP\nNP=%d\nSW=%.2lf\nX0=%.2lf\nSF=%.2lf\nNI=%d\nSW1=%.2lf\nX0_F1=%.2lf\nSF1=%.2lf\nTYPE=SPE\nDATA\n", TD2, width*HLarmor, left*HLarmor, HLarmor, TD1X, width1*150.0, left1*150., 150.0);
+        for (i=0; i<TD1X; i++) {
+            for (j=0; j<TD2; j++) {
+                fprintf(fp, "%lf   0.0\n", spec.hetspectrum[i][j]);
+            }
         }
-    }
-    fprintf(fp,"%s","END");
-    fclose(fp);
+        fprintf(fp, "%s", "END");
+        fclose(fp);
     }
 
-    else{
-    fp=fopen("original_correlation.spe","w");
-    fprintf(fp,"SIMP\nNP=%d\nSW=%.2lf\nX0=%.2lf\nSF=%.2lf\nNI=%d\nSW1=%.2lf\nX0_F1=%.2lf\nSF1=%.2lf\nTYPE=SPE\nDATA\n",TD2,10.0*HLarmor,10.0*HLarmor,HLarmor,TD2*2,20.0*HLarmor,20.0*HLarmor,HLarmor);
-    for(i=0;i<TD2*2;i++){
-        for(j=0;j<TD2;j++){
-            int F1_index=-j+i;
-            if((F1_index>=0)&&(F1_index<TD2))
-                fprintf(fp,"%lf   0.0\n",spec.hetspectrum[F1_index][j]);
-            else fprintf(fp,"0   0.0\n");
-        }}
-    fprintf(fp,"%s","END");
-    fclose(fp);
+    else {
+        fp=fopen("original_correlation.spe", "w");
+        fprintf(fp, "SIMP\nNP=%d\nSW=%.2lf\nX0=%.2lf\nSF=%.2lf\nNI=%d\nSW1=%.2lf\nX0_F1=%.2lf\nSF1=%.2lf\nTYPE=SPE\nDATA\n", TD2, 10.0*HLarmor, 10.0*HLarmor, HLarmor, TD2*2, 20.0*HLarmor, 20.0*HLarmor, HLarmor);
+        for (i=0; i<TD2*2; i++) {
+            for (j=0; j<TD2; j++) {
+                int F1_index=-j+i;
+                if ((F1_index>=0)&&(F1_index<TD2))
+                    fprintf(fp, "%lf   0.0\n", spec.hetspectrum[F1_index][j]);
+                else fprintf(fp, "0   0.0\n");
+            }}
+        fprintf(fp, "%s", "END");
+        fclose(fp);
     }
 
     //normalizing the scaled HEAD spectrum
     double max_F2=0.;
     fill(spec.F2_sum.begin(), spec.F2_sum.end(), 0.);
     fill(F1_sum.begin(), F1_sum.end(), 0.);
-    for(i=0;i<TD2;i++){
-        for(j=0;j<TD2;j++){
+    for (i=0; i<TD2; i++) {
+        for (j=0; j<TD2; j++) {
             spec.F2_sum[j]=spec.F2_sum[j]+spec.spectrum_scaled[i][j];
             F1_sum[i]=F1_sum[i]+spec.spectrum_scaled[i][j];
-            if(spec.F2_sum[j]>max_F2)
+            if (spec.F2_sum[j]>max_F2)
                 max_F2=spec.F2_sum[j];
         }
     }
 
-    for(i=0;i<TD2;i++){
-        for(j=0;j<TD2;j++){
+    for (i=0; i<TD2; i++) {
+        for (j=0; j<TD2; j++) {
             spec.spectrum_scaled[i][j]=spec.spectrum_scaled[i][j]/max_F2;
         }
         spec.F2_sum[i]=spec.F2_sum[i]/max_F2;
@@ -836,21 +835,21 @@ int main(int argc, char* argv[]) {
     }
 
 
-        //normalizing the F2 spectrum, (sum of rows)
+    //normalizing the F2 spectrum, (sum of rows)
     fill(spec.F2_sum.begin(), spec.F2_sum.end(), 0.);
     fill(F1_sum.begin(), F1_sum.end(), 0.);
     max_F2=0.;
-    for(i=0;i<TD2;i++){
-        for(j=0;j<TD2;j++){
+    for (i=0; i<TD2; i++) {
+        for (j=0; j<TD2; j++) {
             spec.F2_sum[j]=spec.F2_sum[j]+spec.spectrum[i][j];
             F1_sum[i]=F1_sum[i]+spec.spectrum[i][j];
-            if(spec.F2_sum[j]>max_F2)
+            if (spec.F2_sum[j]>max_F2)
                 max_F2=spec.F2_sum[j];
         }
     }
 
-    for(i=0;i<TD2;i++){
-        for(j=0;j<TD2;j++){
+    for (i=0; i<TD2; i++) {
+        for (j=0; j<TD2; j++) {
             spec.spectrum[i][j]=spec.spectrum[i][j]/max_F2;
         }
         spec.F2_sum[i]=spec.F2_sum[i]/max_F2;
@@ -861,56 +860,56 @@ int main(int argc, char* argv[]) {
     //Normalizing the HETCOR
     max_F2=0.;
     double max_F1=0.;
-    for(i=0;i<TD1X;i++){
-        for(j=0;j<TD2;j++){
-            if(spec.hetspectrum[i][j]>max_F2)
+    for (i=0; i<TD1X; i++) {
+        for (j=0; j<TD2; j++) {
+            if (spec.hetspectrum[i][j]>max_F2)
                 max_F2=spec.hetspectrum[i][j];
-    }}
-    for(i=0;i<TD1X;i++){
-        for(j=0;j<TD2;j++){
+        }
+    }
+    for (i=0; i<TD1X; i++) {
+        for (j=0; j<TD2; j++) {
             spec.hetspectrum[i][j]=spec.hetspectrum[i][j]/max_F2;
             spec.hetF1_sum[i]+=spec.hetspectrum[i][j];
+        }
+        if (spec.hetF1_sum[i]>max_F1) max_F1=spec.hetF1_sum[i];
     }
-        if(spec.hetF1_sum[i]>max_F1)
-            max_F1=spec.hetF1_sum[i];
-    }
-    for(i=0;i<TD1X;i++){
+    for (i=0; i<TD1X; i++) {
         spec.hetF1_sum[i]/=max_F1;
     }
 
 
     //deciding which datapoint intensities are to be optimized
     //Here a default minimum intensity of 1% is used, this can be changed.
-    for(i=0;i<TD2;i++){
-         if(spec.F2_sum[i]>0.01){
+    for (i=0; i<TD2; i++) {
+         if (spec.F2_sum[i]>0.01) {
             spec.index.push_back(i);
          }
     }
-    for(i=0;i<TD1X;i++){
-         if(spec.hetF1_sum[i]>0.05){
+    for (i=0; i<TD1X; i++) {
+         if (spec.hetF1_sum[i]>0.05) {
             spec.hetindex.push_back(i);
          }
     }
 
     vector< vector<double> > iso_spec;
     iso_spec.resize(TD1X);
-    for(i=0;i<TD1X;i++){
-        iso_spec[i].resize(TD2,0.);
+    for (i=0; i<TD1X; i++) {
+        iso_spec[i].resize(TD2, 0.);
     }
 
     int done=0;
     #pragma omp parallel for
-    for(int J=0;J<spec.hetindex.size();J++){
-    int I,K;
+    for (int J=0; J<spec.hetindex.size(); J++) {
+    int I, K;
     DataStruct spec_temp=spec;
-    printf("%d weights to optimize\n",spec.index.size());
+    printf("%d weights to optimize\n", spec.index.size());
     //setting the initial weights for the Tikhonov minimization to 1
     gsl_vector *weights;
     weights = gsl_vector_alloc (spec.index.size());
     spec_temp.slice=J;
-    for(I=0;I<spec.index.size();I++){
+    for (I=0; I<spec.index.size(); I++) {
         float wt=1.0;
-        gsl_vector_set(weights,I,wt);
+        gsl_vector_set(weights, I, wt);
     }
 
     //The GSL gradient minimization is done here. This closely mirrors the example from
@@ -929,7 +928,7 @@ int main(int argc, char* argv[]) {
     minex_func.params = &spec_temp; //parameter assignment (non-optimized things)
     gsl_multimin_fdfminimizer *s = gsl_multimin_fdfminimizer_alloc (T, minex_func.n); //pointer for the minimizer
     gsl_multimin_fdfminimizer_set (s, &minex_func, weights, 0.1, 1e-0);  //Assigning the initial weights, functions, etc.
-    double cost,cost_min=100000000.; //initial cost is set arbitrarily high
+    double cost, cost_min=100000000.; //initial cost is set arbitrarily high
 
     size_t iter = 0;
     int status;
@@ -945,75 +944,74 @@ int main(int argc, char* argv[]) {
         //maximum allowable gradient convergence criterion
         status = gsl_multimin_test_gradient (s->gradient, 0.00000001);
 
-        if (status == GSL_SUCCESS){
+        if (status == GSL_SUCCESS) {
             break;
         }
         cost=s->f;
 
         //Print to the screen if there is a better solution
-          if(cost<cost_min){
-            printf ("%d/%d %d %f \n",done,spec.hetindex.size(),iter,s->f);
+          if (cost<cost_min) {
+            printf ("%d/%d %d %f \n", done, spec.hetindex.size(), iter, s->f);
             cost_min=cost;
         }
     }  while (status == GSL_CONTINUE && iter < 10000);
 
     printf("Converged!\n");
     done++;
-    calc_HETCOR(s->x,&spec_temp,iso_spec,spec.hetindex[J]);
+    calc_HETCOR(s->x, &spec_temp, iso_spec, spec.hetindex[J]);
     gsl_vector_free(weights);
     gsl_multimin_fdfminimizer_free(s);
     }
 
     //Saving the isotropic spectrum as a *.spe file
-    if(datatype!=3){
-    fp=fopen("isotropic_correlation_F2only.spe","w");
-    fprintf(fp,"SIMP\nNP=%d\nSW=%.2lf\nX0=%.2lf\nSF=%.2lf\nNI=%d\nSW1=%.2lf\nX0_F1=%.2lf\nSF1=%.2lf\nTYPE=SPE\nDATA\n",TD2,width*HLarmor,left*HLarmor,HLarmor,TD1X,width1*HLarmor,left1*HLarmor,HLarmor);
-    for(i=0;i<TD1X;i++){
-        for(j=0;j<TD2;j++){
-            fprintf(fp,"%lf   0.0\n",iso_spec[i][j]);
+    if (datatype!=3) {
+        fp=fopen("isotropic_correlation_F2only.spe", "w");
+        fprintf(fp, "SIMP\nNP=%d\nSW=%.2lf\nX0=%.2lf\nSF=%.2lf\nNI=%d\nSW1=%.2lf\nX0_F1=%.2lf\nSF1=%.2lf\nTYPE=SPE\nDATA\n", TD2, width*HLarmor, left*HLarmor, HLarmor, TD1X, width1*HLarmor, left1*HLarmor, HLarmor);
+        for (i=0; i<TD1X; i++) {
+            for (j=0; j<TD2; j++) {
+                fprintf(fp, "%lf   0.0\n", iso_spec[i][j]);
+            }
         }
-    }
-    fprintf(fp,"%s","END");
-    fclose(fp);
-    }
-
-    else{
-    fp=fopen("isotropic_correlation_F2only.spe","w");
-    fprintf(fp,"SIMP\nNP=%d\nSW=%.2lf\nX0=%.2lf\nSF=%.2lf\nNI=%d\nSW1=%.2lf\nX0_F1=%.2lf\nSF1=%.2lf\nTYPE=SPE\nDATA\n",TD2,10.0*HLarmor,10.0*HLarmor,HLarmor,TD2*2,20.0*HLarmor,20.0*HLarmor,HLarmor);
-    for(i=0;i<TD2*2;i++){
-        for(j=0;j<TD2;j++){
-            int F1_index=-j+i;
-            if((F1_index>=0)&&(F1_index<TD2))
-                fprintf(fp,"%lf   0.0\n",iso_spec[F1_index][j]);
-            else fprintf(fp,"0   0.0\n");
-        }}
-    fprintf(fp,"%s","END");
-    fclose(fp);
+        fprintf(fp, "%s", "END");
+        fclose(fp);
+    } else {
+        fp=fopen("isotropic_correlation_F2only.spe", "w");
+        fprintf(fp, "SIMP\nNP=%d\nSW=%.2lf\nX0=%.2lf\nSF=%.2lf\nNI=%d\nSW1=%.2lf\nX0_F1=%.2lf\nSF1=%.2lf\nTYPE=SPE\nDATA\n", TD2, 10.0*HLarmor, 10.0*HLarmor, HLarmor, TD2*2, 20.0*HLarmor, 20.0*HLarmor, HLarmor);
+        for (i=0; i<TD2*2; i++) {
+            for (j=0; j<TD2; j++) {
+                int F1_index=-j+i;
+                if ((F1_index>=0)&&(F1_index<TD2))
+                    fprintf(fp, "%lf   0.0\n", iso_spec[F1_index][j]);
+                else fprintf(fp, "0   0.0\n");
+            }
+        }
+        fprintf(fp, "%s", "END");
+        fclose(fp);
     }
 
-    if(datatype==1)//HETCOR, onle F2 deconvolution
+    if (datatype==1) //HETCOR, only F2 deconvolution
         return 0;
 
     //transpose
-    for(i=0;i<TD2;i++){
-        for(j=0;j<TD2;j++){
+    for (i=0; i<TD2; i++) {
+        for (j=0; j<TD2; j++) {
             spec.hetspectrum[i][j]=iso_spec[j][i];
         }
     }
 
     done=0;
     #pragma omp parallel for
-    for(int J=0;J<spec.hetindex.size();J++){
-    int I,K;
+    for (int J=0; J<spec.hetindex.size(); J++) {
+    int I, K;
     DataStruct spec_temp=spec;
-    printf("%d weights to optimize\n",spec.index.size());
+    printf("%d weights to optimize\n", spec.index.size());
     //setting the initial weights for the Tikhonov minimization to 1
     gsl_vector *weights;
     weights = gsl_vector_alloc (spec.index.size());
     spec_temp.slice=J;
-    for(I=0;I<spec.index.size();I++){
+    for (I=0; I<spec.index.size(); I++) {
         float wt=1.0;
-        gsl_vector_set(weights,I,wt);
+        gsl_vector_set(weights, I, wt);
     }
 
     //The GSL gradient minimization is done here. This closely mirrors the example from
@@ -1032,7 +1030,7 @@ int main(int argc, char* argv[]) {
     minex_func.params = &spec_temp; //parameter assignment (non-optimized things)
     gsl_multimin_fdfminimizer *s = gsl_multimin_fdfminimizer_alloc (T, minex_func.n); //pointer for the minimizer
     gsl_multimin_fdfminimizer_set (s, &minex_func, weights, 0.1, 1e-0);  //Assigning the initial weights, functions, etc.
-    double cost,cost_min=100000000.; //initial cost is set arbitrarily high
+    double cost, cost_min=100000000.; //initial cost is set arbitrarily high
 
     size_t iter = 0;
     int status;
@@ -1048,50 +1046,48 @@ int main(int argc, char* argv[]) {
         //maximum allowable gradient convergence criterion
         status = gsl_multimin_test_gradient (s->gradient, 0.00000001);
 
-        if (status == GSL_SUCCESS){
+        if (status == GSL_SUCCESS) {
             break;
         }
         cost=s->f;
 
         //Print to the screen if there is a better solution
-          if(cost<cost_min){
-            printf ("%d/%d %d %f \n",done,spec.hetindex.size(),iter,s->f);
+          if (cost<cost_min) {
+            printf ("%d/%d %d %f \n", done, spec.hetindex.size(), iter, s->f);
             cost_min=cost;
         }
     }  while (status == GSL_CONTINUE && iter < 10000);
 
     printf("Converged!\n");
     done++;
-    calc_HETCOR(s->x,&spec_temp,iso_spec,spec.hetindex[J]);
+    calc_HETCOR(s->x, &spec_temp, iso_spec, spec.hetindex[J]);
     gsl_vector_free(weights);
     gsl_multimin_fdfminimizer_free(s);
     }
 
     //Saving the isotropic spectrum as a *.spe file
-    if(datatype!=3){
-    fp=fopen("isotropic_HOMCOR_spectrum.spe","w");
-    fprintf(fp,"SIMP\nNP=%d\nSW=%.2lf\nX0=%.2lf\nSF=%.2lf\nNI=%d\nSW1=%.2lf\nX0_F1=%.2lf\nSF1=%.2lf\nTYPE=SPE\nDATA\n",TD2,width*HLarmor,left*HLarmor,HLarmor,TD2,width*HLarmor,left*HLarmor,HLarmor);
-    for(i=0;i<TD1X;i++){
-        for(j=0;j<TD2;j++){
-            fprintf(fp,"%lf   0.0\n",iso_spec[i][j]);
+    if (datatype != 3) {
+        fp = fopen("isotropic_HOMCOR_spectrum.spe", "w");
+        fprintf(fp, "SIMP\nNP=%d\nSW=%.2lf\nX0=%.2lf\nSF=%.2lf\nNI=%d\nSW1=%.2lf\nX0_F1=%.2lf\nSF1=%.2lf\nTYPE=SPE\nDATA\n", TD2, width*HLarmor, left*HLarmor, HLarmor, TD2, width*HLarmor, left*HLarmor, HLarmor);
+        for (i = 0; i < TD1X; i++) {
+            for (j = 0; j < TD2; j++) {
+                fprintf(fp, "%lf   0.0\n", iso_spec[i][j]);
+            }
         }
-    }
-    fprintf(fp,"%s","END");
-    fclose(fp);
-    }
-
-    else{
-    fp=fopen("isotropic_HOMCOR_spectrum.spe","w");
-    fprintf(fp,"SIMP\nNP=%d\nSW=%.2lf\nX0=%.2lf\nSF=%.2lf\nNI=%d\nSW1=%.2lf\nX0_F1=%.2lf\nSF1=%.2lf\nTYPE=SPE\nDATA\n",TD2,10.0*HLarmor,10.0*HLarmor,HLarmor,TD2*2,20.0*HLarmor,20.0*HLarmor,HLarmor);
-    for(i=0;i<TD2*2;i++){
-        for(j=0;j<TD2;j++){
-            int F1_index=-j+i;
-            if((F1_index>=0)&&(F1_index<TD2))
-                fprintf(fp,"%lf   0.0\n",iso_spec[F1_index][j]);
-            else fprintf(fp,"0   0.0\n");
-        }}
-    fprintf(fp,"%s","END");
-    fclose(fp);
+        fprintf(fp, "%s", "END");
+        fclose(fp);
+    } else {
+        fp = fopen("isotropic_HOMCOR_spectrum.spe", "w");
+        fprintf(fp, "SIMP\nNP=%d\nSW=%.2lf\nX0=%.2lf\nSF=%.2lf\nNI=%d\nSW1=%.2lf\nX0_F1=%.2lf\nSF1=%.2lf\nTYPE=SPE\nDATA\n", TD2, 10.0*HLarmor, 10.0*HLarmor, HLarmor, TD2*2, 20.0*HLarmor, 20.0*HLarmor, HLarmor);
+        for (i = 0; i < TD2*2; i++) {
+            for (j = 0; j < TD2; j++) {
+                int F1_index = -j+i;
+                if ((F1_index >= 0) && (F1_index < TD2))
+                    fprintf(fp, "%lf   0.0\n", iso_spec[F1_index][j]);
+                else fprintf(fp, "0   0.0\n");
+            }}
+        fprintf(fp, "%s", "END");
+        fclose(fp);
     }
 
     return 0;
