@@ -357,7 +357,7 @@ void calc_F1sum(const gsl_vector* weights, void* params, vector<double>& F1_sum,
 int main(int argc, char* argv[]) {
     //parameter declaration
     int TD2, TD1, i=0, j=0;
-    char totxt_filename[128], buffer[256], word[24], pound, *type;
+    char totxt_filename[128], buffer[256], word[24], pound, type[7];
     double left, right, width, delta,lambda;
     FILE *fp;
     DataStruct spec;
@@ -367,20 +367,20 @@ int main(int argc, char* argv[]) {
         printf("What is the type of input file ?\n\
           Either 'totxt' for the 2D CS-lineshape correlation spectrum converted using totxt?\n\
           Or 'csv' for ssNake csv export.\n\
-          Or 'spe' for ssNake simpson export.");
-        scanf("%s",type);
+          Or 'spe' for ssNake simpson export.\n");
+        scanf(" %6s",type);
         printf("What is the filename for the 2D CS-lineshape correlation spectrum?\n");
         printf("Note that the digital resolution in F1 and F2 needs to be identical.\n");
-        scanf("%s",totxt_filename);
+        scanf(" %127s", totxt_filename);
     } else {
-        type = argv[1];
-        strcpy(totxt_filename, argv[2]);
+        strncpy(type, argv[1],6);
+        strncpy(totxt_filename, argv[2], 128);
     }
 
 
     if (argc < 4) {
         printf("Lambda value for regularization (0 for pure least squares)\n");
-        scanf("%lf",&lambda);
+        scanf(" %lf",&lambda);
     } else {
         sscanf(argv[3], "%lf",&lambda);
     }
