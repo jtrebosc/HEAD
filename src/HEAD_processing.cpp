@@ -73,102 +73,6 @@ DataStruct importSimpson(char* filename) {
     return spec ;
 }
 
-
-DataStruct readMatrixFile_ (char* filename) {
-    // Reads a csv spectrum generated with ssNake->export->CSV
-    // The csv data is transposed meaning rows are D2 and columns D1
-
-    // Open the file
-    ifstream file(filename);
-    if (!file.is_open()) {
-        cerr << "Error: Could not open the file '" << filename << "'." << endl;
-        exit(1);
-    }
-    vector<double> x_values;
-    vector<double> y_values;
-    vector<vector<double>> matrix;
-
-    string line;
-
-    // Read the first line (x-axis values)
-    if (getline(file, line)) {
-        istringstream iss(line);
-        string token;
-        if (getline(iss, token, ',')) {
-            if (token.find("#") == 0) {
-                y_values.push_back(stod(token.erase(0, 1)));
-                while (getline(iss, token, ',')) {
-                    y_values.push_back(stod(token));
-                }
-            }
-        }
-    }
-
-    // Read the rest of the file skipping imaginary part
-    while (getline(file, line)) {
-        istringstream iss(line);
-        string token;
-        vector<double> row;
-
-        // Read y-axis value
-        if (getline(iss, token, ',')) {
-            x_values.push_back(stod(token));
-        }
-
-        // Read complex values in the row
-        int i = 0;
-        while (getline(iss, token, ',')) {
-            double real = stod(token);
-            if (getline(iss, token, ',')) {
-                double imag = stod(token);
-            }
-            row.emplace_back(real);
-        }
-
-        matrix.push_back(row);
-    }
-
-    // Close the file
-    file.close();
-
-    // initialize the DataStruct
-    DataStruct spec;
-    int TD2 = x_values.size();
-    int TD1 = y_values.size();
-    double left = x_values[0];
-    double right = x_values[TD2-1];
-    double left1 = y_values[0];
-    double right1 = y_values[TD1-1];
-    spec.TD2=TD2;
-    spec.TD1=TD1;
-    spec.left = left;
-    spec.right = right;
-    spec.left1 = left1;
-    spec.right1 = right1;
-    spec.sw = abs(left-right)/(TD2-1)*TD2;
-    spec.sw1 = abs(left1-right1)/(TD1-1)*TD1;
-    spec.spectrum.resize(TD2);
-    spec.F2_sum.resize(TD2,0.);
-    spec.F1_sum.resize(TD2,0.);
-    spec.lambda=0.0;
-    for(int i=0;i<TD2;i++){
-        spec.spectrum[i].resize(TD2,0.);
-    }
-    // store spec.spectrum from matrix
-    for(int j=0;j<TD1;j++){
-        for(int i=0; i<TD2; i++){
-                int F1_index=-TD1/2+i+j;
-                if((F1_index>0)&&(F1_index<TD2)){
-                    spec.spectrum[F1_index][i] = matrix[TD2-i][TD1-j];
-                    if(spec.spectrum[F1_index][i]<0.)
-                        spec.spectrum[F1_index][i]=0.;
-                }
-        }
-    }
-    return spec ;
-    
-}
-
 DataStruct read_totxt_file_meta(char *totxt_filename) {
     FILE *fp;
     char buffer[256], word[24], pound;
@@ -366,7 +270,6 @@ int main(int argc, char* argv[]) {
     if (argc < 3) {
         printf("What is the type of input file ?\n\
           Either 'totxt' for the 2D CS-lineshape correlation spectrum converted using totxt?\n\
-          Or 'csv' for ssNake csv export.\n\
           Or 'spe' for ssNake simpson export.\n");
         scanf(" %6s",type);
         printf("What is the filename for the 2D CS-lineshape correlation spectrum?\n");
@@ -389,8 +292,6 @@ int main(int argc, char* argv[]) {
 // ----------------------------------------------------------------------------------------
     if (strncmp(type, "totxt", 5) == 0) {
         spec = read_totxt_file_meta(totxt_filename);
-    } else if (strncmp(type, "csv", 3) == 0) {
-        spec = readMatrixFile_(totxt_filename);
     } else if (strncmp(type, "spe", 3) == 0) {
         spec = importSimpson(totxt_filename);
     } else {
