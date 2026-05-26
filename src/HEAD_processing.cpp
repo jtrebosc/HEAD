@@ -64,7 +64,7 @@ DataStruct importSimpson(char* filename) {
         for(int i=0; i<spec.TD2; i++){
                 int F1_index=-spec.TD1/2+i+j;
                 if((F1_index>0)&&(F1_index<spec.TD2)){
-                    spec.spectrum[F1_index][i] = sspec.ComplexData[spec.TD1-j][spec.TD2-i].real();
+                    spec.spectrum[F1_index][i] = sspec.ComplexData[spec.TD1-1-j][spec.TD2-1-i].real();
                     if(spec.spectrum[F1_index][i]<0.)
                         spec.spectrum[F1_index][i]=0.;
                 }
@@ -126,8 +126,8 @@ DataStruct read_totxt_file_meta(char *totxt_filename) {
     spec.right = right;
     spec.left1 = left1;
     spec.right1 = right1;
-    spec.sw = abs(left-right)/(TD2-1)*TD2;
-    spec.sw1 = abs(left1-right1)/(TD1-1)*TD1;
+    spec.sw = (left-right)/(TD2-1)*TD2;
+    spec.sw1 = (left1-right1)/(TD1-1)*TD1;
     spec.spectrum.resize(TD2);
     spec.F2_sum.resize(TD2,0.);
     spec.F1_sum.resize(TD2,0.);
