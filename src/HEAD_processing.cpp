@@ -43,14 +43,15 @@ DataStruct importSimpson(char* filename) {
         cout << "Cannot read input file: " << sfilename; 
         exit(1);
     }
+    //creating the data structure with data stored in reversed order
     spec.TD2 = sspec.NP;
     spec.TD1 = sspec.NI;
     spec.left = sspec.SW/2*(sspec.NP-1)/(sspec.NP)-sspec.REF;
     spec.right = -sspec.SW/2-sspec.REF;
     spec.left1 = sspec.SW1/2*(sspec.NI-1)/(sspec.NI)-sspec.REF1;
     spec.right1 = -sspec.SW1/2-sspec.REF1;
-    spec.sw = sspec.SW;
-    spec.sw1 = sspec.SW1;
+    spec.sw = -sspec.SW; // spectral width is negative with that ordering
+    spec.sw1 = sspec.SW1; // spectral width is negative with that ordering
     spec.F2_sum.resize(spec.TD2,0.);
     spec.F1_sum.resize(spec.TD2,0.);
     spec.spectrum.resize(spec.TD2);
@@ -118,7 +119,7 @@ DataStruct read_totxt_file_meta(char *totxt_filename) {
     }
     fclose(fp);
 
-    //creating the data structure
+    //creating the data structure with data stored in reversed order
     DataStruct spec;
     spec.TD2=TD2;
     spec.TD1=TD1;
@@ -307,7 +308,6 @@ int main(int argc, char* argv[]) {
 
     width=spec.sw;
     delta=width/TD2;
-
 
     //Saving the original 2D spectrum as a *.spe file
     fp=fopen("original_spectrum.spe","w");
