@@ -98,9 +98,9 @@ def loadSimpsonFile(filePath):
 #
 # followed by real values
 (data, ni, sw, sw1, ref, kind) = loadSimpsonFile(sys.argv[1])
-npts = data.shape[-1]
-x = np.arange(npts, dtype=np.float64)/npts*sw - sw/2
-y = np.arange(ni, dtype=np.float64)/ni*sw1 - sw1/2
+nrows, ncols = data.shape
+x = np.arange(ncols, dtype=np.float64)/ncols*sw - sw/2
+y = np.arange(nrows, dtype=np.float64)/nrows*sw1 - sw1/2
 left = x[-1]
 right = x[0]
 left1 = y[-1]
@@ -108,6 +108,8 @@ right1 = y[0]
 
 print(f"# F1LEFT = {left1} Hz. F1RIGHT = {right1} Hz.")
 print(f"# F2LEFT = {left} Hz. F2RIGHT = {right} Hz.")
-for j in range(ni):
-    for i in range(npts):
-        print(data[ni-1-j][npts-1-i].real)
+print(f"#NROWS = {nrows}")
+print(f"#NCOLS = {ncols}")
+for j in range(nrows):
+    for i in range(ncols):
+        print(data[nrows-1-j][ncols-1-i].real)
